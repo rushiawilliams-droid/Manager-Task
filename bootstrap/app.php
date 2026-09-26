@@ -11,11 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+    ->withMiddleware(function (Middleware $middleware) {
+        // Trust all proxy headers sent by GitHub Codespaces forwarded ports
+        $middleware->trustProxies(at: '*');
+        $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+            Request::HEADER_X_FORWARDED_HOST |
+            Request::HEADER_X_FORWARDED_PORT |
+            Request::HEADER_X_FORWARDED_PROTO
         );
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
     })->create();

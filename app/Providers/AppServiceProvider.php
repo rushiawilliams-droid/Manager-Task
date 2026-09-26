@@ -20,7 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Forces Laravel route helpers to use relative paths instead of full domain URLs
-        URL::forceScheme('https');
+        // Force HTTPS in GitHub Codespaces environment
+        if (request()->server->has('HTTP_X_FORWARDED_PROTO') && request()->server->get('HTTP_X_FORWARDED_PROTO') === 'https') {
+            URL::forceScheme('https');
+        }
+
+        // Handle proxy headers from Codespaces forwarded ports
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            URL::forceRootUrl('https://' . $_SERVER['HTTP_X_FORWARDED_HOST']);
+        }
     }
 }
